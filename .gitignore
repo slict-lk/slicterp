@@ -1,0 +1,65 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Next.js
+.next/
+.vercel/
+.turbopack
+
+# Environment variables
+.env
+.env.local
+.env.docker.local
+.env.production
+.env.production.local
+.env.*.local
+
+# Logs
+logs
+*.log
+
+# OS & editors
+.DS_Store
+.vscode/
+.idea/
+.agent/
+.gemini/
+
+# Build output
+dist/
+build/
+
+# Dumps and backups
+*.bak
+*.backup
+*.dmp
+*.dump
+*.sql
+*.sql.bak
+*.sql.dump
+backup/
+backups/
+dump/
+dumps/
+
+# Keep pnpm lockfile (committed). Ignore package-lock if present.
+# pnpm-lock.yaml (keep)
+
+erp.tar 
+*.tar
+test_groq.json
+test_groq_full.json
+
+# Shell output spills and captured sessions (see docs/AUDIT_TASK_TRACKER.md 1.1)
+cookies.txt
+buildtrigger.txt
+/s
+/findstr
+/git
+/type
+*.tsbuildinfo
+Research Papers/

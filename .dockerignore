@@ -1,0 +1,55 @@
+.git
+.gitignore
+coverage
+node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temp files
+tmp
+temp
+.tmp
+.cache
+*.tmp
+*.temp
+*.pid
+*.tsbuildinfo
+
+# Editor and OS files
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env.*
+!.env.local.example
+
+# Dumps and backups
+backups
+backup
+dumps
+dump
+*.dump
+*.dmp
+*.bak
+*.backup
+*.sql.dump
+*.sql.bak

@@ -1,0 +1,23 @@
+[build]
+  command = "pnpm prisma generate && pnpm build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
+  PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "1"
+  NEXT_TELEMETRY_DISABLED = "1"
+  SKIP_ENV_VALIDATION = "1"
+  # Dummy URLs for Prisma generate at build time (set real values in Netlify UI for runtime)
+  DATABASE_URL = "postgresql://user:pass@localhost:5432/db?schema=public"
+  DIRECT_URL = "postgresql://user:pass@localhost:5432/db?schema=public"
+
+# Redirects for Next.js
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+

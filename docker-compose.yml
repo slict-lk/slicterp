@@ -1,0 +1,16 @@
+services:
+  erp-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: erp-local
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      # Override localhost -> host.docker.internal so the container can reach
+      # the SSH tunnel running on your PC (Windows/Mac Docker Desktop only).
+      # Set DOCKER_DATABASE_URL in .env - never inline credentials here.
+      - DATABASE_URL=${DOCKER_DATABASE_URL:?DOCKER_DATABASE_URL must be set}
+    restart: unless-stopped

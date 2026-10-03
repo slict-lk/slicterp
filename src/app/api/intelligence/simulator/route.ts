@@ -1,0 +1,54 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getOrCreateDefaultTenant } from '@/lib/get-tenant';
+import { handleApiError } from '@/lib/error-handler';
+import {
+  getSimulatorBaseline,
+  runSimulatorScenario,
+} from '@/lib/intelligence/simulator/simulator-service';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
+    const tenant = await getOrCreateDefaultTenant();
+    const { requireAnyPermission } = await import('@/lib/auth');
+    await requireAnyPermission([{ moduleId: 'intelligence', action: 'view' }, { moduleId: 'ai', action: 'view' }]);
+
+    const data = await getSimulatorBaseline(prisma, tenant.id);
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        tenant: {
+          id: tenant.id,
+          name: tenant.name,
+          subdomain: tenant.subdomain,
+        },
+        ...data,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    return handleApiError(error as Error);
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const tenant = await getOrCreateDefaultTenant();
+    const { requireAnyPermission } = await import('@/lib/auth');
+    await requireAnyPermission([{ moduleId: 'intelligence', action: 'approve' }, { moduleId: 'ai', action: 'approve' }]);
+
+    const body = await request.json();
+    const result = await runSimulatorScenario(prisma, tenant.id, body ?? {});
+
+    return NextResponse.json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    return handleApiError(error as Error);
+  }
+}

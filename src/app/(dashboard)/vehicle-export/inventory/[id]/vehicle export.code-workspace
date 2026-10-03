@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../.."
+		},
+		{
+			"path": "../../../../../../../../vehicle-frontend"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "hotel"
+	}
+}

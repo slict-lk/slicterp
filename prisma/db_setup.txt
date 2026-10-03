@@ -1,0 +1,8 @@
+npm run db:generate
+npm run db:migrate
+
+# Push schema to database (creates all tables)
+npm run db:push
+
+# Optional: Open Prisma Studio to view data
+npm run db:studio

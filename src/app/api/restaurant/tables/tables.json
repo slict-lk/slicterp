@@ -1,0 +1,90 @@
+[
+  {
+    "id": "p8qhdvce0",
+    "tenantId": "cmivuqa8z0000epwfkvvn28mi",
+    "number": 3,
+    "capacity": 4,
+    "location": "241,84",
+    "status": "AVAILABLE",
+    "createdAt": "2026-02-21T01:15:43.625Z",
+    "shape": "rect",
+    "zone": "AC"
+  },
+  {
+    "id": "pimmanroq",
+    "tenantId": "cmivuqa8z0000epwfkvvn28mi",
+    "number": 1,
+    "capacity": 4,
+    "location": "52,80",
+    "status": "AVAILABLE",
+    "createdAt": "2026-02-21T01:18:59.673Z",
+    "shape": "rect",
+    "zone": "AC"
+  },
+  {
+    "id": "hr2lehsvz",
+    "tenantId": "cmivuqa8z0000epwfkvvn28mi",
+    "number": 2,
+    "capacity": 4,
+    "location": "143,79",
+    "status": "AVAILABLE",
+    "createdAt": "2026-02-21T01:19:02.299Z",
+    "shape": "rect",
+    "zone": "AC"
+  },
+  {
+    "id": "we9nswfz9",
+    "tenantId": "cmivuqa8z0000epwfkvvn28mi",
+    "number": 3,
+    "capacity": 4,
+    "location": "54,171",
+    "status": "AVAILABLE",
+    "createdAt": "2026-02-21T01:19:24.402Z",
+    "shape": "rect",
+    "zone": "AC"
+  },
+  {
+    "id": "grwgiz0qn",
+    "tenantId": "cmivuqa8z0000epwfkvvn28mi",
+    "number": 4,
+    "capacity": 4,
+    "location": "142,166",
+    "status": "AVAILABLE",
+    "createdAt": "2026-02-21T01:20:31.911Z",
+    "shape": "circle",
+    "zone": "AC"
+  },
+  {
+    "id": "v4pe4tat9",
+    "tenantId": "cmivuqa8z0000epwfkvvn28mi",
+    "number": 6,
+    "capacity": 4,
+    "location": "231,171",
+    "status": "AVAILABLE",
+    "createdAt": "2026-02-21T01:23:48.452Z",
+    "shape": "rect",
+    "zone": "AC"
+  },
+  {
+    "id": "fvg20oko1",
+    "tenantId": "cmivuqa8z0000epwfkvvn28mi",
+    "number": 7,
+    "capacity": 4,
+    "location": "36,77",
+    "status": "AVAILABLE",
+    "createdAt": "2026-02-21T01:28:37.905Z",
+    "shape": "rect",
+    "zone": "OUTDOOR"
+  },
+  {
+    "id": "y22ld0ygv",
+    "tenantId": "cmivuqa8z0000epwfkvvn28mi",
+    "number": 8,
+    "capacity": 4,
+    "location": "122,72",
+    "status": "AVAILABLE",
+    "createdAt": "2026-02-21T01:28:41.466Z",
+    "shape": "rect",
+    "zone": "OUTDOOR"
+  }
+]
