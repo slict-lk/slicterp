@@ -873,12 +873,13 @@ model Account {
 
 model Invoice {
   id                String            @id @default(cuid())
-  number            String            @unique
+  number            String
   type              InvoiceType       @default(SALES)
   status            InvoiceStatus     @default(DRAFT)
   customerId        String
   salesOrderId      String?
   issueDate         DateTime          @default(now())
+  dateOfSupply      DateTime?
   dueDate           DateTime
   subtotal          Float
   tax               Float             @default(0)
@@ -905,6 +906,7 @@ model Invoice {
   lines             InvoiceLine[]
   payments          Payment[]
 
+  @@unique([tenantId, number])
   @@index([number])
   @@index([vendorId])
   @@index([periodId])
@@ -912,6 +914,18 @@ model Invoice {
   @@index([status])
   @@index([dueDate])
   @@index([tenantId])
+}
+
+/// Gap-free VAT tax invoice sequence per tenant and classification code (the
+/// QQQQ in YYMMM_QQQQ_XXXXX). Incremented inside the transaction that creates the
+/// invoice; see issueTaxInvoiceNumber in src/lib/tax-invoice.
+model InvoiceCounter {
+  tenantId           String
+  classificationCode String
+  lastSequence       Int      @default(0)
+  updatedAt          DateTime @updatedAt
+
+  @@id([tenantId, classificationCode])
 }
 
 model InvoiceLine {

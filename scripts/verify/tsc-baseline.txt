@@ -1,0 +1,7 @@
+# Type errors that already exist on the base branch. scripts/verify.sh fails only
+# on errors NOT listed here, so a branch is judged on what it adds, not on what
+# it inherits. Format: <file>: <TS code>. Remove an entry once it is fixed; the
+# script reports entries that no longer occur.
+
+# isActive does not exist on Survey (the model has status). Fixed by PR #1.
+src/app/api/surveys/[id]/route.ts: TS2353

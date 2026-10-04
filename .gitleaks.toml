@@ -1,0 +1,44 @@
+# gitleaks configuration for scripts/verify.sh.
+#
+# The default rules find structured secrets (API keys, tokens, private keys) but
+# not human-chosen passwords, which is how this repository actually leaked: a
+# database URL with an inline password and a password string literal. These two
+# rules cover that class. Redaction markers, ${VAR} interpolation and obvious
+# placeholders are allowed.
+
+title = "SLICT ERP"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "connection-string-password"
+description = "Database or broker URL with an inline password"
+regex = '''(?i)\b(?:postgres(?:ql)?|mysql|mariadb|mongodb(?:\+srv)?|rediss?|amqps?)://[^:@\s/'"`]+:([^@\s'"`]{4,})@'''
+secretGroup = 1
+keywords = ["://"]
+
+  [[rules.allowlists]]
+  regexTarget = "match"
+  regexes = [
+    '''\$\{''',
+    '''\[REDACTED''',
+    '''(?i):<[^>]*>@''',
+    '''(?i):(?:password|pass|secret|changeme|\*+)@''',
+  ]
+
+[[rules]]
+id = "password-string-literal"
+description = "A password assigned as a string literal in code or config"
+regex = '''(?i)\b[\w.-]*(?:password|passwd|pwd)[\w.-]*['"]?\s*[:=]\s*['"`]([^'"`\s]{8,})['"`]'''
+secretGroup = 1
+keywords = ["pass", "pwd"]
+
+  [[rules.allowlists]]
+  regexTarget = "match"
+  regexes = [
+    '''process\.env''',
+    '''\$[{(]''',
+    '''\[REDACTED''',
+    '''(?i)(?:placeholder|example|changeme|your[-_]?password|<[^>]*>)''',
+  ]

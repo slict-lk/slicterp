@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { publishModuleMutationEvent } from '@/lib/ai/module-events';
 import { requireTenantContext } from '@/lib/server/erp-context';
+import {
+  issueTaxInvoiceNumber,
+  readTaxInvoiceSettings,
+  validatePurchaser,
+  validateTaxInvoiceLines,
+} from '@/lib/tax-invoice';
+import type { TaxInvoiceSettingsResult } from '@/lib/tax-invoice';
 
 
 export const dynamic = 'force-dynamic';
@@ -46,6 +53,18 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Only SALES invoices are issued by the tenant; PURCHASE invoices carry the vendor's number.
+async function loadTaxInvoiceSettings(tenantId: string, invoiceType: string): Promise<TaxInvoiceSettingsResult> {
+  if (invoiceType !== 'SALES') {
+    return { ok: true, settings: { enabled: false } };
+  }
+  const tenant = await prisma.tenant.findUnique({
+    where: { id: tenantId },
+    select: { settings: true, taxRegistrationNumber: true },
+  });
+  return readTaxInvoiceSettings(tenant ?? { settings: null, taxRegistrationNumber: null });
+}
+
 // POST /api/accounting/invoices - Create new invoice
 export async function POST(request: NextRequest) {
   try {
@@ -53,8 +72,51 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Validate invoice number
-    if (!body.number || typeof body.number !== 'string' || body.number.trim().length === 0) {
+    // Tenants that opt in via Tenant.settings.taxInvoice issue SALES invoices as VAT
+    // tax invoices (Gazette 2481/22 as amended by 2500/106, mandatory from 1 October
+    // 2026): the server assigns the serial number and the mandatory particulars are
+    // checked. Every other invoice is created exactly as before.
+    const taxInvoiceSettings = await loadTaxInvoiceSettings(tenantId, body.type || 'SALES');
+    if (!taxInvoiceSettings.ok) {
+      return NextResponse.json(
+        { error: 'Tax invoice settings are incomplete', details: taxInvoiceSettings.errors },
+        { status: 400 },
+      );
+    }
+    const taxInvoice = taxInvoiceSettings.settings;
+
+    let dateOfSupply: Date | undefined;
+    if (body.dateOfSupply !== undefined && body.dateOfSupply !== null && body.dateOfSupply !== '') {
+      dateOfSupply = new Date(body.dateOfSupply);
+      if (Number.isNaN(dateOfSupply.getTime())) {
+        return NextResponse.json({ error: 'dateOfSupply is not a valid date' }, { status: 400 });
+      }
+    }
+
+    if (taxInvoice.enabled) {
+      const errors = validateTaxInvoiceLines(Array.isArray(body.lines) ? body.lines : []);
+      if (!dateOfSupply) {
+        errors.unshift('dateOfSupply is required on a tax invoice');
+      }
+      const customer = body.customerId
+        ? await prisma.customer.findFirst({
+            where: { id: body.customerId, tenantId },
+            select: { name: true, address: true, taxRegistrationNumber: true },
+          })
+        : null;
+      if (!customer) {
+        errors.unshift('A tax invoice must be issued to a customer of this tenant');
+      } else {
+        errors.push(...validatePurchaser(customer));
+      }
+      if (errors.length > 0) {
+        return NextResponse.json(
+          { error: 'This invoice does not meet the tax invoice requirements', details: errors },
+          { status: 400 },
+        );
+      }
+    } else if (!body.number || typeof body.number !== 'string' || body.number.trim().length === 0) {
+      // Validate invoice number
       return NextResponse.json({ error: 'Invoice number is required' }, { status: 400 });
     }
 
@@ -68,13 +130,15 @@ export async function POST(request: NextRequest) {
         throw new Error('Valid open accounting period is required');
       }
 
-      const existing = await tx.invoice.findFirst({
-        where: { tenantId, number: body.number }
-      });
-      if (existing) {
-        const err = new Error(`Invoice number ${body.number} already exists`);
-        err.name = 'ValidationError';
-        throw err;
+      if (!taxInvoice.enabled) {
+        const existing = await tx.invoice.findFirst({
+          where: { tenantId, number: body.number }
+        });
+        if (existing) {
+          const err = new Error(`Invoice number ${body.number} already exists`);
+          err.name = 'ValidationError';
+          throw err;
+        }
       }
 
       const now = new Date();
@@ -106,10 +170,21 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Numbered last, after every check that can still reject the invoice, and on
+      // this transaction: if the insert or the journal entry fails, the counter
+      // increment rolls back with it and no number is skipped.
+      const number = taxInvoice.enabled
+        ? await issueTaxInvoiceNumber(tx, {
+            tenantId,
+            classificationCode: taxInvoice.classificationCode,
+            issuedAt: issueDate,
+          })
+        : body.number;
+
       // 1. Create the Invoice with lines
       const newInvoice = await tx.invoice.create({
         data: {
-          number: body.number,
+          number,
           type: body.type || 'SALES',
           status: body.status || 'DRAFT',
           customerId: body.type === 'SALES' ? body.customerId : undefined,
@@ -120,6 +195,7 @@ export async function POST(request: NextRequest) {
           exchangeRate: Number(body.exchangeRate || 1),
           baseCurrencyTotal: computedTotal * Number(body.exchangeRate || 1),
           issueDate: issueDate,
+          ...(dateOfSupply && { dateOfSupply }),
           dueDate: dueDate,
           subtotal: computedSubtotal,
           tax: computedTax,

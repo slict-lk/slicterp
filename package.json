@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "NODE_OPTIONS=--max-old-space-size=4096 tsc --noEmit",
+    "verify": "bash scripts/verify.sh",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",

@@ -46,37 +46,3 @@ export async function generateInvoiceNumber(
 
     return invoiceNumber;
 }
-
-/**
- * Alternative: Sequential invoice number using database counter
- * Format: YYMM_SRC_NNNNN (e.g., 2601_WEB_00495)
- * 
- * This uses an atomic raw SQL update to increment a counter,
- * guaranteeing uniqueness even under high concurrency.
- * 
- * Requires: InvoiceCounter model in schema
- */
-export async function generateSequentialInvoiceNumber(
-    tenantId: string,
-    source: string = 'POS'
-): Promise<string> {
-    const now = new Date();
-    const year = now.getFullYear().toString().slice(-2);
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const prefix = `${year}${month}_${source.toUpperCase()}`;
-
-    // Atomic increment using raw SQL for guaranteed uniqueness
-    // This creates the counter if it doesn't exist, or increments it atomically
-    const result = await prisma.$queryRaw<[{ next_val: bigint }]>`
-        INSERT INTO "InvoiceCounter" ("tenantId", "prefix", "counter", "updatedAt")
-        VALUES (${tenantId}, ${prefix}, 1, NOW())
-        ON CONFLICT ("tenantId", "prefix")
-        DO UPDATE SET "counter" = "InvoiceCounter"."counter" + 1, "updatedAt" = NOW()
-        RETURNING "counter" as next_val
-    `;
-
-    const sequence = Number(result[0].next_val);
-    const sequenceStr = sequence.toString().padStart(5, '0');
-
-    return `${prefix}_${sequenceStr}`;
-}
