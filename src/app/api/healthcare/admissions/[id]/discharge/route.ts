@@ -129,8 +129,8 @@ export async function POST(
             const invoiceNumber = `INV-${new Date().getFullYear()}-${admission.admissionNumber}`;
 
             // Check if invoice already exists (avoid duplicates if re-running)
-            const existingInvoice = await prisma.invoice.findUnique({
-                where: { number: invoiceNumber }
+            const existingInvoice = await prisma.invoice.findFirst({
+                where: { tenantId: tenant.id, number: invoiceNumber }
             });
 
             if (!existingInvoice) {
